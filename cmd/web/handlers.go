@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -12,7 +14,23 @@ import (
 
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Server", "Go")
-	w.Write([]byte("Hello from The Judging Platform"))
+
+	// Read the template file into a template set.
+	// If there's an error, log the detailed error message and return.
+	ts, err := template.ParseFiles("./ui/html/pages/home.html")
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Service Error", http.StatusInternalServerError)
+		return
+	}
+
+	// Write the template content as the response body. The last parameter
+	// to Execute() represents dynamic data we want to pass in, for now is nil.
+	err = ts.Execute(w, nil)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
 }
 
 // Define a class rank handler function which will be where
