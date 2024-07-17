@@ -15,18 +15,27 @@ import (
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Server", "Go")
 
-	// Read the template file into a template set.
+	// Initialize a slice containing the paths to the two HTML files.
+	// The base template must be the first file in the slice.
+	files := []string{
+		"./ui/html/base.html",
+		"./ui/html/partials/nav.html",
+		"./ui/html/pages/home.html",
+	}
+
+	// Read the template files into a template set.
+	// We use ... to pass the contents of the files slice as variadic arguments.
 	// If there's an error, log the detailed error message and return.
-	ts, err := template.ParseFiles("./ui/html/pages/home.html")
+	ts, err := template.ParseFiles(files...)
 	if err != nil {
 		log.Print(err.Error())
 		http.Error(w, "Internal Service Error", http.StatusInternalServerError)
 		return
 	}
 
-	// Write the template content as the response body. The last parameter
+	// Write the base template content as the response body. The last parameter
 	// to Execute() represents dynamic data we want to pass in, for now is nil.
-	err = ts.Execute(w, nil)
+	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		log.Print(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
