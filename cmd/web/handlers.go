@@ -3,9 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"log/slog"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 )
@@ -13,12 +11,8 @@ import (
 // Define a home handler function which will be where a judge
 // can login to the judging platform.
 
-func home(w http.ResponseWriter, r *http.Request) {
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Server", "Go")
-
-	// Initialize a new structured logger that writes to the standard
-	// out stream and includes the file source.
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}))
 
 	// Initialize a slice containing the paths to the two HTML files.
 	// The base template must be the first file in the slice.
@@ -33,7 +27,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// If there's an error, log the detailed error message and return.
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		logger.Error(err.Error())
+		app.logger.Error(err.Error(), "method", r.Method, "uri", r.URL.RequestURI())
 		http.Error(w, "Internal Service Error", http.StatusInternalServerError)
 		return
 	}
@@ -42,7 +36,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// to Execute() represents dynamic data we want to pass in, for now is nil.
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		logger.Error(err.Error())
+		app.logger.Error(err.Error(), "method", r.Method, "uri", r.URL.RequestURI())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
@@ -50,7 +44,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 // Define a class rank handler function which will be where
 // judges rank competitors in a given class.
 
-func classRank(w http.ResponseWriter, r *http.Request) {
+func (app *application) classRank(w http.ResponseWriter, r *http.Request) {
 	contest := r.PathValue("contest")
 	year, err := strconv.Atoi(r.PathValue("year"))
 	if err != nil || year != time.Now().Year() {
@@ -62,7 +56,7 @@ func classRank(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Display a form to the judge to rank %s %s competitors for the %d %s contest.", division, class, year, contest)
 }
 
-func classRankPost(w http.ResponseWriter, r *http.Request) {
+func (app *application) classRankPost(w http.ResponseWriter, r *http.Request) {
 	contest := r.PathValue("contest")
 	year, err := strconv.Atoi(r.PathValue("year"))
 	if err != nil || year != time.Now().Year() {
@@ -81,7 +75,7 @@ func classRankPost(w http.ResponseWriter, r *http.Request) {
 // Define a class results handler function which will be where
 // compiled judge rankings are displayed.
 
-func classResults(w http.ResponseWriter, r *http.Request) {
+func (app *application) classResults(w http.ResponseWriter, r *http.Request) {
 	contest := r.PathValue("contest")
 	year, err := strconv.Atoi(r.PathValue("year"))
 	if err != nil || year != time.Now().Year() {
