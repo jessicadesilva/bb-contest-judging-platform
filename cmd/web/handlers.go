@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -14,6 +15,10 @@ import (
 
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Server", "Go")
+
+	// Initialize a new structured logger that writes to the standard
+	// out stream and includes the file source.
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}))
 
 	// Initialize a slice containing the paths to the two HTML files.
 	// The base template must be the first file in the slice.
@@ -28,7 +33,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// If there's an error, log the detailed error message and return.
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		log.Print(err.Error())
+		logger.Error(err.Error())
 		http.Error(w, "Internal Service Error", http.StatusInternalServerError)
 		return
 	}
@@ -37,7 +42,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// to Execute() represents dynamic data we want to pass in, for now is nil.
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		log.Print(err.Error())
+		logger.Error(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }

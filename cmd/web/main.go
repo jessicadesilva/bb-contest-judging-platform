@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -23,6 +24,10 @@ func main() {
 	// Parse command line flag values and assign to variables.
 	flag.Parse()
 
+	// Initialize a new structured logger that writes to the standard
+	// out stream and includes the file source.
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}))
+
 	// Use the http.NewServeMux() function to initialize a new servemux.
 	mux := http.NewServeMux()
 
@@ -39,11 +44,13 @@ func main() {
 	mux.HandleFunc("GET /results/{contest}/{year}/{division}/{class}", classResults)
 
 	// Print a log message to say that the server is starting.
-	log.Printf("starting server on %s", cfg.addr)
+	logger.Info("starting server", slog.String("addr", cfg.addr))
 
 	// Use the http.ListenAndServe() function to start a new web server.
-	// If http.ListenAndServe() returns an error we use the log.Fatal()
-	// function to log the error message and exit.
+	// If http.ListenAndServe() returns an error, we log any error message
+	// returned at Error severity and then terminate the application with
+	// exit code 1.
 	err := http.ListenAndServe(cfg.addr, mux)
-	log.Fatal(err)
+	logger.Error(err.Error())
+	os.Exit(1)
 }
