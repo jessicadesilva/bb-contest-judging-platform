@@ -7,9 +7,20 @@ import (
 )
 
 func main() {
+	// Struct type for storing configuration settings.
+	type config struct {
+		addr      string
+		staticDir string
+	}
+
+	var cfg config
+
 	// Command line flag for network address with default value :4000.
-	addr := flag.String("addr", ":4000", "HTTP network address")
-	// Parse command line flag value and assign to addr variable.
+	flag.StringVar(&cfg.addr, "addr", ":4000", "HTTP network address")
+	// Command line flag for directory of static assets with default value ./ui/static.
+	flag.StringVar(&cfg.staticDir, "static-dir", "./ui/static", "Path to static assets")
+
+	// Parse command line flag values and assign to variables.
 	flag.Parse()
 
 	// Use the http.NewServeMux() function to initialize a new servemux.
