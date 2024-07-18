@@ -9,16 +9,17 @@ import (
 
 // Struct type for application-wide dependencies.
 type application struct {
-	logger *slog.Logger
+	logger    *slog.Logger
+	staticDir string
+}
+
+// Struct type for storing configuration settings.
+type config struct {
+	addr      string
+	staticDir string
 }
 
 func main() {
-
-	// Struct type for storing configuration settings.
-	type config struct {
-		addr      string
-		staticDir string
-	}
 
 	var cfg config
 
@@ -34,22 +35,7 @@ func main() {
 	// out stream and includes the file source.
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}))
 
-	app := &application{logger: logger}
-
-	// Use the http.NewServeMux() function to initialize a new servemux.
-	mux := http.NewServeMux()
-
-	// Create a file server out of the static assets directory.
-	fileServer := http.FileServer(http.Dir(cfg.staticDir))
-	// Register the file server as the handler for all URL paths
-	// that start with "/static/".
-	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
-
-	// Register each function as the handler for the corresponding URL pattern.
-	mux.HandleFunc("GET /{$}", app.home)
-	mux.HandleFunc("GET /rank/{contest}/{year}/{division}/{class}", app.classRank)
-	mux.HandleFunc("POST /rank/{contest}/{year}/{division}/{class}", app.classRankPost)
-	mux.HandleFunc("GET /results/{contest}/{year}/{division}/{class}", app.classResults)
+	app := &application{logger: logger, staticDir: cfg.staticDir}
 
 	// Print a log message to say that the server is starting.
 	logger.Info("starting server", slog.String("addr", cfg.addr))
@@ -58,7 +44,7 @@ func main() {
 	// If http.ListenAndServe() returns an error, we log any error message
 	// returned at Error severity and then terminate the application with
 	// exit code 1.
-	err := http.ListenAndServe(cfg.addr, mux)
+	err := http.ListenAndServe(cfg.addr, app.routes())
 	logger.Error(err.Error())
 	os.Exit(1)
 }
