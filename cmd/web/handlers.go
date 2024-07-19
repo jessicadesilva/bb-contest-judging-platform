@@ -54,6 +54,23 @@ func (app *application) classRank(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Display a form to the judge to rank %s %s competitors for the %d %s contest.", division, class, year, contest)
 }
 
+func (app *application) createCompetitor(w http.ResponseWriter, r *http.Request) {
+	// Create dummy data.
+	competitorName := "Ashley Kaltwasser"
+	competitorLocation := "Las Vegas, NV"
+
+	// Pass data into ContestEntryModel.Insert() method, receiving
+	// the ID of the new record back.
+	_, err := app.competitors.Insert(competitorName, competitorLocation)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	// Redirect the user to the relevant page for the contest entry.
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
 func (app *application) classRankPost(w http.ResponseWriter, r *http.Request) {
 	contest := r.PathValue("contest")
 	year, err := strconv.Atoi(r.PathValue("year"))
