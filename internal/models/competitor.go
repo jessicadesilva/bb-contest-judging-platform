@@ -19,6 +19,7 @@ type CompetitorModel struct {
 // This will insert a new competitor into the database.
 func (m *CompetitorModel) Insert(Name string, Location string) (int, error) {
 	// SQL statement to execute.
+	// Use placeholder parameters to avoid unwanted SQL injection.
 	stmt := `INSERT INTO competitors (name, location)
 	VALUES (?, ?)`
 
