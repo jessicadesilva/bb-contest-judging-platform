@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/jessicadesilva/bb-contest-judging-platform/internal/models"
+
 	// Alias unused package that we need to run its
 	// init() function to register itself with the
 	// database/sql package.
@@ -15,8 +17,9 @@ import (
 
 // Struct type for application-wide dependencies.
 type application struct {
-	logger    *slog.Logger
-	staticDir string
+	logger      *slog.Logger
+	staticDir   string
+	competitors *models.CompetitorModel
 }
 
 // Struct type for storing configuration settings.
@@ -54,7 +57,10 @@ func main() {
 	// Ensure connection pool is closed before main() exits.
 	defer db.Close()
 
-	app := &application{logger: logger, staticDir: cfg.staticDir}
+	app := &application{logger: logger,
+		staticDir:   cfg.staticDir,
+		competitors: &models.CompetitorModel{DB: db},
+	}
 
 	// Print a log message to say that the server is starting.
 	logger.Info("starting server", slog.String("addr", cfg.addr))
