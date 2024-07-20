@@ -18,6 +18,7 @@ func (app *application) routes() *http.ServeMux {
 	mux.HandleFunc("GET /rank/{contest}/{year}/{division}/{class}", app.classRank)
 	mux.HandleFunc("POST /rank/{contest}/{year}/{division}/{class}", app.classRankPost)
 	mux.HandleFunc("POST /competitor/{location}/{competitor}", app.createCompetitor)
+	mux.HandleFunc("GET /competitor/view/{id}", app.viewCompetitor)
 	mux.HandleFunc("GET /results/{contest}/{year}/{division}/{class}", app.classResults)
 
 	return mux
